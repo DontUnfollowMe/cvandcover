@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Optimizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+        textarea, input[type="file"] {
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CV Optimizer</h1>
+        <form id="cvForm">
+            <label for="cvInput">Upload your CV (LaTeX):</label>
+            <input type="file" id="cvInput" accept=".tex" required>
+
+            <label for="jobDescription">Paste Job Description:</label>
+            <textarea id="jobDescription" rows="8" required></textarea>
+
+            <button type="submit">Generate Updated CV & Cover Letter</button>
+        </form>
+        <div id="output" style="margin-top: 20px; display: none;">
+            <h3>Download your files:</h3>
+            <a id="cvDownload" href="#" download="Updated_CV.pdf">Updated CV</a><br>
+            <a id="coverLetterDownload" href="#" download="Cover_Letter.pdf">Cover Letter</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('cvForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const cvFile = document.getElementById('cvInput').files[0];
+            const jobDescription = document.getElementById('jobDescription').value;
+
+            if (!cvFile || !jobDescription) {
+                alert('Please upload a CV and paste the job description.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('cvFile', cvFile);
+            formData.append('jobDescription', jobDescription);
+
+            try {
+                const response = await fetch('https://your-backend-api-url.com/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate files.');
+                }
+
+                const data = await response.json();
+                const cvBlob = new Blob([data.updatedCV], { type: 'application/pdf' });
+                const coverLetterBlob = new Blob([data.coverLetter], { type: 'application/pdf' });
+
+                const cvURL = URL.createObjectURL(cvBlob);
+                const coverLetterURL = URL.createObjectURL(coverLetterBlob);
+
+                document.getElementById('cvDownload').href = cvURL;
+                document.getElementById('coverLetterDownload').href = coverLetterURL;
+
+                document.getElementById('output').style.display = 'block';
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    </script>
+</body>
+</html>
